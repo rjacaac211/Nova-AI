@@ -27,8 +27,8 @@ logger = logging.getLogger(__name__)
 # Load environment variables from .env file
 load_dotenv()
 
-# Initialize an in-memory conversation manager with a window size of 10 messages
-memory_manager = MemoryManager(window_size=10)
+# Initialize an in-memory conversation manager with a window size of 15 messages
+memory_manager = MemoryManager(window_size=15)
 
 def create_agent():
     logger.info("Creating agent...")

@@ -1,5 +1,5 @@
 class MemoryManager:
-    def __init__(self, window_size: int = 10):
+    def __init__(self, window_size: int = 15):
         self.window_size = window_size
         self.conversations = {}  # Mapping from session_id to list of messages
 
