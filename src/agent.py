@@ -3,11 +3,23 @@ from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
 from langsmith import traceable
-from src.automation_functions import open_chrome_tool, open_calculator_tool, open_notepad_tool, get_cpu_usage_tool, get_ram_usage_tool, run_shell_command_tool
+
+from src.automation_functions import (
+    open_chrome_tool,
+    open_calculator_tool,
+    open_notepad_tool,
+    get_cpu_usage_tool,
+    get_ram_usage_tool,
+    run_shell_command_tool
+)
 from src.vector_db import query_function
+from src.memory_manager import MemoryManager
 
 # Load environment variables from .env file
 load_dotenv()
+
+# Initialize an in-memory conversation manager with a window size of 10 messages
+memory_manager = MemoryManager(window_size=10)
 
 def create_agent():
 
@@ -30,6 +42,7 @@ def create_agent():
         run_shell_command_tool
     ]
 
+    # Define the system prompt for the agent
     system_prompt = """
         You are Nova, an intelligent automation agent designed to execute system tasks. 
         Your available tools are:
@@ -53,26 +66,52 @@ def create_agent():
 
     return agent
 
+# @traceable
+# def process_query(query: str) -> str:
+#     """
+#     Process a single-turn query without memory.
+#     """
+#     agent = create_agent()
+#     # Optionally, check which tool the vector DB matched (for debugging)
+#     matched_function = query_function(query)
+#     print("Vector DB Matched Function:", matched_function)
+
+#     # Build the input payload as a message list
+#     inputs = {
+#         "messages": [
+#             {"role": "user", "content": query}
+#         ]
+#     }
+#     # Invoke the agent and extract the final message content
+#     result = agent.invoke(inputs)
+#     return result["messages"][-1].content
+
 @traceable
-def process_query(query: str) -> str:
+def run_agent(session_id:str, user_message: str) -> str:
     """
-    Process the query using the agent and return the response.
+    Process a user message using the agent and store conversation history in memory.
+    :param session_id: Unique identifier for the user/session.
+    :param user_message: The latest user message.
+    :return: The agent's final text response.
     """
     agent = create_agent()
-    # Build the input payload as a message list
-    inputs = {
-        "messages": [
-            {
-                "role": "user",
-                "content": query
-            }
-        ]
-    }
 
-    # Optionally, use ChromaDB to perform a similarity search on the function descriptions
-    matched_function = query_function(query)
-    print("Vector DB Matched Function:", matched_function)
+    # Append the new user message
+    memory_manager.save_message(session_id, "user", user_message)
 
-    # Invoke the agent and extract the final message content
+    # Load conversation history from memory
+    conversation_history = memory_manager.load_conversation(session_id)
+
+    # Invoke the agent with the conversation history
+    inputs = {"messages": conversation_history}
     result = agent.invoke(inputs)
-    return result["messages"][-1].content
+    assistant_message = result["messages"][-1].content
+
+    # Save the assistant's response in memory
+    memory_manager.save_message(session_id, "assistant", assistant_message)
+    return assistant_message
+
+def clear_session(session_id: str):
+    """Clear conversation history for a given session."""
+    memory_manager.clear_conversation(session_id)
+
