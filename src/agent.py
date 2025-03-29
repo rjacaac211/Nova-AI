@@ -108,6 +108,11 @@ def run_agent(session_id:str, user_message: str) -> str:
     :return: The agent's final text response.
     """
     logger.info("Session '%s': Received user message: %s", session_id, user_message)
+
+    # Log the matched function from vector DB
+    matched_function = query_function(user_message)
+    logger.info("Vector DB Matched Function: %s", matched_function)
+    
     agent = create_agent()
 
     # Append the new user message
