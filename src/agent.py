@@ -1,4 +1,5 @@
 import os
+import logging
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
@@ -15,6 +16,13 @@ from src.automation_functions import (
 from src.vector_db import query_function
 from src.memory_manager import MemoryManager
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -22,9 +30,10 @@ load_dotenv()
 memory_manager = MemoryManager(window_size=10)
 
 def create_agent():
-
+    logger.info("Creating agent...")
     openai_api_key = os.getenv("OPENAI_API_KEY")
     if not openai_api_key:
+        logger.error("OPENAI_API_KEY is not set")
         raise ValueError("OPENAI_API_KEY must be set")
 
     llm = ChatOpenAI(
@@ -63,7 +72,7 @@ def create_agent():
         tools=tools,
         prompt=system_prompt
     )
-
+    logger.info("Agent created successfully.")
     return agent
 
 # @traceable
@@ -71,10 +80,12 @@ def create_agent():
 #     """
 #     Process a single-turn query without memory.
 #     """
+#     logger.info("Processing single-turn query: %s", query)
 #     agent = create_agent()
+
 #     # Optionally, check which tool the vector DB matched (for debugging)
 #     matched_function = query_function(query)
-#     print("Vector DB Matched Function:", matched_function)
+#     logger.info("Vector DB Matched Function: %s", matched_function)
 
 #     # Build the input payload as a message list
 #     inputs = {
@@ -84,7 +95,9 @@ def create_agent():
 #     }
 #     # Invoke the agent and extract the final message content
 #     result = agent.invoke(inputs)
-#     return result["messages"][-1].content
+#     response = result["messages"][-1].content
+#     logger.info("Single-turn agent response: %s", response)
+#     return response
 
 @traceable
 def run_agent(session_id:str, user_message: str) -> str:
@@ -94,13 +107,16 @@ def run_agent(session_id:str, user_message: str) -> str:
     :param user_message: The latest user message.
     :return: The agent's final text response.
     """
+    logger.info("Session '%s': Received user message: %s", session_id, user_message)
     agent = create_agent()
 
     # Append the new user message
     memory_manager.save_message(session_id, "user", user_message)
+    logger.info("Session '%s': User message saved in memory.", session_id)
 
     # Load conversation history from memory
     conversation_history = memory_manager.load_conversation(session_id)
+    logger.info("Session '%s': Loaded conversation history: %s", session_id, conversation_history)
 
     # Invoke the agent with the conversation history
     inputs = {"messages": conversation_history}
@@ -109,9 +125,11 @@ def run_agent(session_id:str, user_message: str) -> str:
 
     # Save the assistant's response in memory
     memory_manager.save_message(session_id, "assistant", assistant_message)
+    logger.info("Session '%s': Assistant response saved: %s", session_id, assistant_message)
     return assistant_message
 
 def clear_session(session_id: str):
     """Clear conversation history for a given session."""
     memory_manager.clear_conversation(session_id)
+    logger.info("Session '%s' conversation cleared.", session_id)
 
