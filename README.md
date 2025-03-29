@@ -38,6 +38,8 @@ Nova-AI/
 
 ## API Endpoints
 
+Nova-AI uses FastAPI to expose its functionality as a RESTful API. FastAPI automatically generates interactive documentation via Swagger UI and ReDoc, making it easy to test and visualize the API endpoints.
+
 ### Execute Agent Request
 
 **POST** `/execute`
