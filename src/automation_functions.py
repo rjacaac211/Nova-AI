@@ -22,6 +22,12 @@ def open_notepad_tool(query: str) -> str:
     return "Notepad has been opened successfully."
 
 @tool
+def open_calendar_tool(query: str) -> str:
+    """Open the calendar application."""
+    os.system("start outlookcal:")
+    return "Calendar has been opened successfully."
+
+@tool
 def get_cpu_usage_tool(query: str) -> str:
     """Retrive the current CPU usage percentage."""
     import psutil

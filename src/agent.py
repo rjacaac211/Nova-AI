@@ -9,6 +9,7 @@ from src.automation_functions import (
     open_chrome_tool,
     open_calculator_tool,
     open_notepad_tool,
+    open_calendar_tool,
     get_cpu_usage_tool,
     get_ram_usage_tool,
     run_shell_command_tool
@@ -46,6 +47,7 @@ def create_agent():
         open_chrome_tool,
         open_calculator_tool,
         open_notepad_tool,
+        open_calendar_tool,
         get_cpu_usage_tool,
         get_ram_usage_tool,
         run_shell_command_tool

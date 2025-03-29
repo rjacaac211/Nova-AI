@@ -23,6 +23,7 @@ def get_vectorstore():
         "Open the Google Chrome browser.",
         "Open the system calculator.",
         "Open the Notepad application.",
+        "Open the calendar application.",
         "Retrieve the current CPU usage percentage.",
         "Retrieve the current RAM usage and available memory.",
         "Execute a shell command and return its output."
@@ -31,6 +32,7 @@ def get_vectorstore():
         {"function_name": "open_chrome_tool"},
         {"function_name": "open_calculator_tool"},
         {"function_name": "open_notepad_tool"},
+        {"function_name": "open_calendar_tool"},
         {"function_name": "get_cpu_usage_tool"},
         {"function_name": "get_ram_usage_tool"},
         {"function_name": "run_shell_command_tool"}
